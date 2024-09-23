@@ -25,8 +25,8 @@ def show_login_window(action):
         username_entry.insert(0, saved_username)
         password_entry.insert(0, saved_password)
 
-    result_path = 'C:/Users/52312819805/Desktop/BITBOOP/output/Incluidos/resultado_inclusao_processos'  # Caminho padrão de resultados
-    planilha_path = 'C:/Users/52312819805/Desktop/BITBOOP/Code/Pushnator/Inserir_Push.xlsx'  # Caminho padrão da planilha
+    result_path = r'C:\Users\52312819805\Desktop\PUSHNATOR\output\Incluidos\resultado_inclusao_processos'  # Caminho padrão de resultados
+    planilha_path = r'C:\Users\52312819805\Desktop\PUSHNATOR\project\Inserir_Push.xlsx'  # Caminho padrão da planilha
 
     result_path_var = tk.StringVar(value=result_path)
     planilha_path_var = tk.StringVar(value=planilha_path)

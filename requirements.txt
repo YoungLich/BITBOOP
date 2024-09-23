@@ -4,3 +4,4 @@ Pathlib
 Pyautogui
 Pillow
 Pandas
+WebDriver_Maneger

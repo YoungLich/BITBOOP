@@ -30,7 +30,7 @@ def carregar_processos(file_path):
     processos = df.iloc[:, 0].tolist()
     return processos
 
-def incluir_processo(driver, numero_processo):
+def excluir_processo(driver, numero_processo):
     try:
         wait = WebDriverWait(driver, 25)
         campo_busca = wait.until(EC.visibility_of_element_located((By.ID, 'j_id148:inputNumeroProcesso-inputNumeroProcessoDecoration:inputNumeroProcesso-inputNumeroProcesso')))
@@ -39,24 +39,24 @@ def incluir_processo(driver, numero_processo):
         campo_busca.send_keys(Keys.ENTER)
         while True:
             try:
-                botao_incluir = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="j_id175:j_id179:0:incluiProcessoButton"]')))
-                botao_incluir.click()
+                botao_excluir = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="j_id175:j_id179:0:excluiProcessoButton"]')))
+                botao_excluir.click()
                 break
             except StaleElementReferenceException:
                 continue
         WebDriverWait(driver, 10).until(EC.alert_is_present())
         alert = driver.switch_to.alert
         alert.accept()
-        return f"Processo {numero_processo} incluído com sucesso"
+        return f"Processo {numero_processo} excluído com sucesso"
     except TimeoutException as e:
-        print(f"Erro ao incluir o processo {numero_processo}: {e}")
-        return f"Erro ao incluir o processo {numero_processo}: {e}"
+        print(f"Erro ao excluir o processo {numero_processo}: {e}")
+        return f"Erro ao excluir o processo {numero_processo}: {e}"
     except ElementNotInteractableException as e:
         print(f"Elemento não interativo para o processo {numero_processo}: {e}")
         return f"Elemento não interativo para o processo {numero_processo}: {e}"
     except Exception as e:
-        print(f"Erro inesperado ao incluir o processo {numero_processo}: {e}")
-        return f"Erro inesperado ao incluir o processo {numero_processo}: {e}"
+        print(f"Erro inesperado ao excluir o processo {numero_processo}: {e}")
+        return f"Erro inesperado ao excluir o processo {numero_processo}: {e}"
 
 def automatizar_pje(username, password, processos_planilha, result_path):
     options = Options()
@@ -68,31 +68,31 @@ def automatizar_pje(username, password, processos_planilha, result_path):
 
     try:
         driver.get('https://pje1g.trf3.jus.br/pje/login.seam')
-        frame_correta = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="ssoFrame"]')))
+        frame_correta = driver.find_element(By.XPATH, '//*[@id="ssoFrame"]')
         driver.switch_to.frame(frame_correta)
-
-        username_input = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, 'username')))
-        username_input.send_keys(username)
-        password_input = driver.find_element(By.ID, 'password')
-        password_input.send_keys(password)
-        driver.find_element(By.ID, 'kc-login').click()
-
-        # Aguarda redirecionamento para a página principal
-        WebDriverWait(driver, 10).until(EC.url_contains('pje1g.trf3.jus.br/pje/Push/listView.seam'))
-
+        wait = WebDriverWait(driver, 10)
+        campo_usuario = wait.until(EC.visibility_of_element_located((By.ID, 'username')))
+        campo_senha = driver.find_element(By.ID, 'password')
+        campo_usuario.send_keys(username)
+        campo_senha.send_keys(password)
+        botao_login = driver.find_element(By.ID, 'kc-login')
+        botao_login.click()
+        time.sleep(3)
         driver.get('https://pje1g.trf3.jus.br/pje/Push/listView.seam')
-        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="pushTab_lbl"]')))
+        wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="pushTab_lbl"]')))
 
         resultados = []
 
         for processo in processos_planilha:
-            status = incluir_processo(driver, processo)
+            status = excluir_processo(driver, processo)
             resultados.append({"Processo": processo, "Status": status})
 
         df_resultados = pd.DataFrame(resultados)
 
+        # Certifica que o diretório para salvar o resultado existe
         os.makedirs(os.path.dirname(result_path), exist_ok=True)
 
+        # Salva a planilha de resultados
         try:
             df_resultados.to_excel(result_path, index=False)
             print(f"Planilha de resultados salva com sucesso em {result_path}.")
@@ -102,7 +102,7 @@ def automatizar_pje(username, password, processos_planilha, result_path):
     finally:
         driver.quit()
 
-def incluir_processos(username, password, planilha_path, result_path):
+def excluir_processos(username, password, planilha_path, result_path):
     processos_planilha = carregar_processos(planilha_path)
     automatizar_pje(username, password, processos_planilha, result_path)
 
@@ -112,6 +112,7 @@ if __name__ == "__main__":
         usuario = ''  
         senha = ''     
 
-    planilha_path = 'C:/Users/52312819805/Desktop/BITBOOP/Code/Pushnator/Incluir_Push.xlsx'
-    result_path = 'C:/Users/52312819805/Desktop/BITBOOP/output/Incluidos/resultado_inclusao_processos.xlsx'
-    incluir_processos(usuario, senha, planilha_path, result_path)
+    planilha_path = 'C:/Users/52312819805/Desktop/PUSHNATOR/project/Excluir_Push.xlsx'
+    result_path = 'C:/Users/52312819805/Desktop/PUSHNATOR/output/Incluidos/resultado_inclusao_processos'
+    
+    excluir_processos(usuario, senha, planilha_path, result_path)
